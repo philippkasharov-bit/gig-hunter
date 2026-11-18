@@ -11,15 +11,16 @@ DESC_HIT_POINTS = 3
 BUDGET_STATED_BONUS = 2
 FRESH_WINDOW = timedelta(hours=3)
 FRESH_BONUS = 3
-# Short ASCII keywords ("ui") need word boundaries or they hit "quiz", "build".
-SHORT_ASCII_MAX_LEN = 3
+# Short keywords ("ui", "вб") need word boundaries or they hit "quiz", "вблизи".
+SHORT_KEYWORD_MAX_LEN = 3
 
 
 @dataclass(frozen=True)
 class ScoredGig:
     gig: Gig
     score: int
-    category: str
+    categories: tuple[str, ...]  # best first
+    tier: str
 
 
 @lru_cache(maxsize=8)
@@ -27,7 +28,7 @@ def _compile(keywords: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
     patterns = []
     for kw in keywords:
         body = re.escape(kw)
-        if kw.isascii() and len(kw) <= SHORT_ASCII_MAX_LEN:
+        if len(kw) <= SHORT_KEYWORD_MAX_LEN:
             body = rf"\b{body}\b"
         patterns.append(re.compile(body, re.IGNORECASE))
     return tuple(patterns)
@@ -69,20 +70,22 @@ def _keyword_points(gig: Gig, keywords: list[str]) -> int:
             + DESC_HIT_POINTS * _hits(gig.description, keywords))
 
 
-def categorize(gig: Gig, cfg: FilterConfig) -> str:
-    """Specific category with most keyword points; ties go to the earlier one.
+def categorize(gig: Gig, cfg: FilterConfig) -> tuple[str, ...]:
+    """Every specific category hit, most keyword points first (ties: config order).
 
     The LAST category in config is generic: its words ("дизайн", "макет") appear
     in most descriptions, so it is used only when no specific category hits.
     """
     *specific, generic = cfg.categories
-    best, best_pts = generic, 0
-    for tag in specific:
-        keywords = cfg.categories[tag]
-        pts = _keyword_points(gig, keywords)
-        if pts > best_pts:
-            best, best_pts = tag, pts
-    return best
+    points = [(tag, _keyword_points(gig, cfg.categories[tag])) for tag in specific]
+    ordered = sorted(points, key=lambda tp: tp[1], reverse=True)  # stable sort
+    return tuple(tag for tag, pts in ordered if pts > 0) or (generic,)
+
+
+def tier(points: int, cfg: FilterConfig) -> str:
+    """Tier whose minimum score is the highest one reached; else the lowest tier."""
+    tiers = sorted(cfg.score_tiers.items(), key=lambda kv: kv[1], reverse=True)
+    return next((tag for tag, floor in tiers if points >= floor), tiers[-1][0])
 
 
 def score(gig: Gig, cfg: FilterConfig, now: datetime) -> int:
@@ -99,8 +102,12 @@ def rank(
 ) -> list[ScoredGig]:
     """Filter then sort by score desc, newest first on ties."""
     now = now or datetime.now(timezone.utc)
-    scored = [ScoredGig(g, score(g, cfg, now), categorize(g, cfg)) for g in gigs
-              if is_candidate(g, cfg, now)]
+    scored = []
+    for g in gigs:
+        if not is_candidate(g, cfg, now):
+            continue
+        pts = score(g, cfg, now)
+        scored.append(ScoredGig(g, pts, categorize(g, cfg), tier(pts, cfg)))
     epoch = datetime.min.replace(tzinfo=timezone.utc)
     return sorted(
         scored,

@@ -37,6 +37,20 @@ categories:
     - баннер
     - превью
     - обложк
+  маркетплейс:
+    - маркетплейс
+    - карточки товар
+    - карточка товар
+    - карточку товар
+    - карточек товар
+    - карточки для товар
+    - wildberries
+    - вайлдберриз
+    - ozon
+    - озон
+    - wb
+    - вб
+    - мп
   презентации:
     - презентаци
     - инфографик
@@ -65,10 +79,27 @@ categories:
 keyword_free_sources:
   - kwork
 
+# Tier hashtag -> minimum score (title keyword +10, description keyword +3,
+# budget stated +2, posted <3h ago +3). Alert gets the highest tier reached.
+score_tiers:
+  топ: 20
+  норм: 10
+  слабо: 0
+
 stoplist:
   - за идею
   - доля в проекте
   - процент от прибыли
+  - бартер
+  # Mass job ads (mostly Freelance.ru), let in by marketplace words
+  - копирайт
+  - без опыта
+  - новичк
+  - гибкий график
+  - подработк
+  - простая работа
+  - заполнение товарн
+  - из дома
   # Off-niche design (mostly Kwork). Phrases, not bare "3d"/"интерьер":
   # descriptions mention "3D-мокап" or "товар в интерьере" in in-niche gigs.
   - 3d-модел

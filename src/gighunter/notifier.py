@@ -24,10 +24,11 @@ def _budget(gig_budget: int | None) -> str:
 def format_message(item: ScoredGig) -> str:
     g = item.gig
     desc = g.description[:DESC_PREVIEW_CHARS].strip()
+    tags = " ".join(f"#{html.escape(t)}" for t in (*item.categories, item.tier))
     parts = [
+        tags,  # first line: visible in the Telegram notification preview
+        f"{g.source.value} · {_budget(g.budget_max_rub)} · score {item.score}",
         f"<b>{html.escape(g.title)}</b>",
-        f"#{html.escape(item.category)} · {g.source.value} · "
-        f"{_budget(g.budget_max_rub)} · score {item.score}",
     ]
     if desc:
         parts.append(html.escape(desc))

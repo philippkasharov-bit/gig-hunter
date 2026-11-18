@@ -5,7 +5,7 @@ from gighunter.config import FilterConfig
 import pytest
 from pydantic import ValidationError
 
-from gighunter.filtering import categorize, is_candidate, rank
+from gighunter.filtering import categorize, is_candidate, rank, tier
 from gighunter.models import Source
 
 
@@ -56,28 +56,40 @@ def test_rank_orders_by_score_then_newest(cfg: FilterConfig) -> None:
     assert [s.gig.external_id for s in ranked] == ["strong", "weak", "old"]
 
 
-def test_category_with_most_hits_wins(cfg: FilterConfig) -> None:
-    assert categorize(make_gig(title="Логотип", description="дизайн"), cfg) == "логотип"
-    assert categorize(make_gig(title="UI и логотип"), cfg) == "логотип"  # tie -> earlier
-
-
-def test_title_hit_outweighs_description(cfg: FilterConfig) -> None:
-    gig = make_gig(title="UI приложения", description="и логотип")
-    assert categorize(gig, cfg) == "веб"
+def test_all_hit_categories_best_first(cfg: FilterConfig) -> None:
+    gig = make_gig(title="Логотип", description="и UI")
+    assert categorize(gig, cfg) == ("логотип", "веб")
+    assert categorize(make_gig(title="UI и логотип"), cfg) == ("логотип", "веб")  # tie -> order
 
 
 def test_generic_category_only_when_no_specific_hit(cfg: FilterConfig) -> None:
     many_generic = make_gig(title="Дизайн дизайн", description="дизайн, и логотип")
-    assert categorize(many_generic, cfg) == "логотип"
-    assert categorize(make_gig(title="Дизайн коробки"), cfg) == "дизайн"
-    assert categorize(make_gig(title="Афиша"), cfg) == "дизайн"  # keyword-free source
+    assert categorize(many_generic, cfg) == ("логотип",)
+    assert categorize(make_gig(title="Дизайн коробки"), cfg) == ("дизайн",)
+    assert categorize(make_gig(title="Афиша"), cfg) == ("дизайн",)  # keyword-free source
 
 
-def test_rank_attaches_category(cfg: FilterConfig) -> None:
-    assert [s.category for s in rank([make_gig(title="Логотип")], cfg, NOW)] == ["логотип"]
+def test_short_cyrillic_keyword_needs_word_boundary(cfg: FilterConfig) -> None:
+    assert categorize(make_gig(title="Карточки на ВБ"), cfg) == ("маркетплейс",)
+    assert categorize(make_gig(title="Дизайн вблизи моря"), cfg) == ("дизайн",)
 
 
-@pytest.mark.parametrize("tags", [{"two words": ["x"]}, {"веб-дизайн": ["x"]}, {"пусто": []}])
-def test_bad_category_tag_rejected(cfg: FilterConfig, tags: dict) -> None:
+@pytest.mark.parametrize(("points", "expected"), [(25, "топ"), (20, "топ"), (19, "норм"), (3, "слабо")])
+def test_tier_is_highest_reached(cfg: FilterConfig, points: int, expected: str) -> None:
+    assert tier(points, cfg) == expected
+
+
+def test_rank_attaches_categories_and_tier(cfg: FilterConfig) -> None:
+    item = rank([make_gig(title="Логотип")], cfg, NOW)[0]
+    assert (item.categories, item.tier) == (("логотип",), "норм")
+
+
+@pytest.mark.parametrize(("field", "tags"), [
+    ("categories", {"two words": ["x"]}),
+    ("categories", {"веб-дизайн": ["x"]}),
+    ("categories", {"пусто": []}),
+    ("score_tiers", {"очень топ": 20}),
+])
+def test_bad_tag_rejected(cfg: FilterConfig, field: str, tags: dict) -> None:
     with pytest.raises(ValidationError):
-        FilterConfig.model_validate({**cfg.model_dump(), "categories": tags})
+        FilterConfig.model_validate({**cfg.model_dump(), field: tags})

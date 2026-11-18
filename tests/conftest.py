@@ -22,7 +22,9 @@ def cfg(tmp_path: Path) -> FilterConfig:
     return FilterConfig(
         sources={Source.FL_RU: True},
         feeds={Source.FL_RU: "https://example.com/rss"},
-        categories={"логотип": ["логотип"], "веб": ["ui"], "дизайн": ["дизайн"]},
+        categories={"логотип": ["логотип"], "веб": ["ui"], "маркетплейс": ["вб"],
+                    "дизайн": ["дизайн"]},
+        score_tiers={"топ": 20, "норм": 10, "слабо": 0},
         stoplist=["за идею"],
         max_age_hours=48,
         db_path=tmp_path / "seen.db",

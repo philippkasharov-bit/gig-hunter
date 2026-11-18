@@ -106,7 +106,8 @@ Get-Content data\gighunter.log -Tail 20 -Wait
 |---|---|
 | `sources` | turn each platform on/off |
 | `feeds` | URL per source |
-| `categories` | tag → keywords (case-insensitive substrings). A gig must contain at least one keyword; it is tagged with the specific category that has the most hits (title counts more, ties go to the earlier one), shown as a hashtag like `#логотип`. The **last** category (`дизайн`) is generic: used only when no specific category hits. Short Latin words (`ui`) match whole words only |
+| `categories` | tag → keywords (case-insensitive substrings). A gig must contain at least one keyword; the alert gets a hashtag for **every** specific category it hits, best first (title counts more, ties go to the earlier one), e.g. `#логотип #полиграфия`. The **last** category (`дизайн`) is generic: used only when no specific category hits. Short words (≤3 letters: `ui`, `вб`, `мп`) match whole words only |
+| `score_tiers` | tier hashtag → minimum score, e.g. `топ: 20`, `норм: 10`, `слабо: 0`; each alert gets the highest tier it reaches, so you can tap `#топ` in Telegram |
 | `stoplist` | any hit rejects the gig |
 | `keyword_free_sources` | sources already limited to design (default: `kwork`); keyword match skipped, other filters still apply |
 | `min_budget_rub` | budget floor; `null` = none. Gigs without a stated budget always pass |
