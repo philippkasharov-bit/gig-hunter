@@ -28,7 +28,7 @@ Config: config.yaml (keywords, stoplist, feeds, intervals). Secrets: .env (gitig
 
 ## Open items
 - P0: bot token was exposed in a screenshot in chat (2026-11-18). Remind to revoke in @BotFather and update .env. Never write tokens to files or logs (httpx INFO log is silenced for this reason).
-- P1: keyword noise, owner undecided: "сайт" lets dev/SEO gigs through; "карточк" lets copywriting ("карточки товаров") through.
+- Resolved 2026-11-18: removed keywords "сайт" and "карточк" (dev/SEO/copywriting noise). Trade-off: marketplace card *design* gigs without other keywords are now missed.
 - P2: Kwork design category already on-topic but 19/44 dropped by keyword filter; option: skip keyword check for Kwork.
 - P2: data/gighunter.log grows unbounded (~1 line/5 min, small).
 - P1: repo is public.
