@@ -1,3 +1,4 @@
+import html
 import logging
 import re
 from datetime import datetime
@@ -6,26 +7,17 @@ from xml.etree import ElementTree
 
 import httpx
 
+from gighunter.adapters.common import get_page, parse_budget
 from gighunter.models import Gig, Source
 
 log = logging.getLogger(__name__)
 
-HTTP_TIMEOUT_S = 20.0
-USER_AGENT = "Mozilla/5.0 (compatible; gighunter/0.1)"
 _TAG_RE = re.compile(r"<[^>]+>")
-_BUDGET_RE = re.compile(r"(\d[\d\s ]*)\s*(?:руб|₽|р\.)", re.IGNORECASE)
 _TRAILING_ID_RE = re.compile(r"(\d{4,})")
 
 
 def _text(item: ElementTree.Element, tag: str) -> str:
     return (item.findtext(tag) or "").strip()
-
-
-def _parse_budget(text: str) -> int | None:
-    match = _BUDGET_RE.search(text)
-    if not match:
-        return None
-    return int(re.sub(r"\D", "", match.group(1)))
 
 
 def _parse_date(raw: str) -> datetime | None:
@@ -42,9 +34,10 @@ def _external_id(link: str, guid: str) -> str:
 
 
 def _item_to_gig(item: ElementTree.Element, source: Source) -> Gig:
-    title, link = _text(item, "title"), _text(item, "link")
-    desc = _TAG_RE.sub(" ", _text(item, "description")).strip()
-    budget = _parse_budget(f"{title} {desc}")
+    # FL.ru double-encodes entities inside CDATA (e.g. "&#8381;" for the ruble sign).
+    title, link = html.unescape(_text(item, "title")), _text(item, "link")
+    desc = html.unescape(_TAG_RE.sub(" ", _text(item, "description"))).strip()
+    budget = parse_budget(f"{title} {desc}")
     return Gig(
         source=source,
         external_id=_external_id(link, _text(item, "guid")),
@@ -73,8 +66,4 @@ class RssAdapter:
         self.source, self._url = source, url
 
     def fetch(self, client: httpx.Client) -> list[Gig]:
-        resp = client.get(
-            self._url, headers={"User-Agent": USER_AGENT}, timeout=HTTP_TIMEOUT_S
-        )
-        resp.raise_for_status()
-        return parse_rss(resp.content, self.source)
+        return parse_rss(get_page(client, self._url).content, self.source)
