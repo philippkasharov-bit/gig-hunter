@@ -19,6 +19,7 @@ SHORT_ASCII_MAX_LEN = 3
 class ScoredGig:
     gig: Gig
     score: int
+    category: str
 
 
 @lru_cache(maxsize=8)
@@ -63,9 +64,29 @@ def is_candidate(gig: Gig, cfg: FilterConfig, now: datetime) -> bool:
     return _hits(text, cfg.keywords) > 0
 
 
+def _keyword_points(gig: Gig, keywords: list[str]) -> int:
+    return (TITLE_HIT_POINTS * _hits(gig.title, keywords)
+            + DESC_HIT_POINTS * _hits(gig.description, keywords))
+
+
+def categorize(gig: Gig, cfg: FilterConfig) -> str:
+    """Specific category with most keyword points; ties go to the earlier one.
+
+    The LAST category in config is generic: its words ("дизайн", "макет") appear
+    in most descriptions, so it is used only when no specific category hits.
+    """
+    *specific, generic = cfg.categories
+    best, best_pts = generic, 0
+    for tag in specific:
+        keywords = cfg.categories[tag]
+        pts = _keyword_points(gig, keywords)
+        if pts > best_pts:
+            best, best_pts = tag, pts
+    return best
+
+
 def score(gig: Gig, cfg: FilterConfig, now: datetime) -> int:
-    pts = TITLE_HIT_POINTS * _hits(gig.title, cfg.keywords)
-    pts += DESC_HIT_POINTS * _hits(gig.description, cfg.keywords)
+    pts = _keyword_points(gig, cfg.keywords)
     if gig.budget_max_rub is not None:
         pts += BUDGET_STATED_BONUS
     if gig.posted_at and now - _aware(gig.posted_at) <= FRESH_WINDOW:
@@ -78,7 +99,7 @@ def rank(
 ) -> list[ScoredGig]:
     """Filter then sort by score desc, newest first on ties."""
     now = now or datetime.now(timezone.utc)
-    scored = [ScoredGig(g, score(g, cfg, now)) for g in gigs
+    scored = [ScoredGig(g, score(g, cfg, now), categorize(g, cfg)) for g in gigs
               if is_candidate(g, cfg, now)]
     epoch = datetime.min.replace(tzinfo=timezone.utc)
     return sorted(

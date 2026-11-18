@@ -22,7 +22,7 @@ def cfg(tmp_path: Path) -> FilterConfig:
     return FilterConfig(
         sources={Source.FL_RU: True},
         feeds={Source.FL_RU: "https://example.com/rss"},
-        keywords=["логотип", "дизайн", "ui"],
+        categories={"логотип": ["логотип"], "веб": ["ui"], "дизайн": ["дизайн"]},
         stoplist=["за идею"],
         max_age_hours=48,
         db_path=tmp_path / "seen.db",

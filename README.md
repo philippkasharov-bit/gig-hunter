@@ -13,7 +13,7 @@ Alerts only: it never applies or replies for you.
 | Profi.ru | login required | off, no adapter |
 
 Every 5 minutes it fetches all enabled sources, keeps gigs that match your
-keywords (and none of the stop words), ranks them, and sends up to 5 new ones to
+category keywords (and none of the stop words), ranks them, and sends up to 5 new ones to
 Telegram. Sent gigs are remembered in `data/gighunter.db`, so nothing repeats.
 A source that fails is backed off (5 min, doubling, max 1 h) without stopping the others.
 
@@ -106,7 +106,7 @@ Get-Content data\gighunter.log -Tail 20 -Wait
 |---|---|
 | `sources` | turn each platform on/off |
 | `feeds` | URL per source |
-| `keywords` | case-insensitive substrings; a gig must contain at least one. Short Latin words (`ui`) match whole words only |
+| `categories` | tag → keywords (case-insensitive substrings). A gig must contain at least one keyword; it is tagged with the specific category that has the most hits (title counts more, ties go to the earlier one), shown as a hashtag like `#логотип`. The **last** category (`дизайн`) is generic: used only when no specific category hits. Short Latin words (`ui`) match whole words only |
 | `stoplist` | any hit rejects the gig |
 | `keyword_free_sources` | sources already limited to design (default: `kwork`); keyword match skipped, other filters still apply |
 | `min_budget_rub` | budget floor; `null` = none. Gigs without a stated budget always pass |

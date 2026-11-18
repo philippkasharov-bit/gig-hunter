@@ -12,29 +12,53 @@ feeds:
   freelance_ru: https://freelance.ru/task         # HTML task feed, all categories
   kwork: https://kwork.ru/projects?c=15           # c=15 = "Дизайн", all subcategories
 
-keywords:
-  - дизайн
-  - дизайнер
-  - ui
-  - ux
-  - интерфейс
-  - макет
-  - figma
-  - фигма
-  - лендинг
-  - landing
-  - логотип
-  - фирменный стиль
-  - брендбук
-  - баннер
-  - презентаци
-  - инфографик
-  - иллюстраци
-  - превью
-  - обложк
-  - моушн
-  - motion
-  - веб-дизайн
+# Category tag -> keywords (case-insensitive substrings). A gig must hit at
+# least one keyword; its category is the specific one with most hits (title
+# counts more), ties to the earlier one. The LAST category is generic: used only
+# when no specific category hits (also for keyword-free Kwork gigs).
+# Tags become Telegram hashtags: one word, letters/digits/underscore only.
+categories:
+  логотип:
+    - логотип
+    - фирменный стиль
+    - брендбук
+    - бренд бук
+    - бренд-бук
+  веб:
+    - веб-дизайн
+    - лендинг
+    - landing
+    - ui
+    - ux
+    - интерфейс
+    - figma
+    - фигма
+  баннеры:
+    - баннер
+    - превью
+    - обложк
+  презентации:
+    - презентаци
+    - инфографик
+  полиграфия:
+    - упаковк
+    - этикетк
+    - наклейк
+    - полиграф
+    - афиш
+    - буклет
+    - листовк
+  иллюстрация:
+    - иллюстраци
+    - маскот
+    - москот   # common misspelling
+  моушн:
+    - моушн
+    - motion
+  дизайн:
+    - дизайн
+    - дизайнер
+    - макет
 
 # Feeds already limited to design (Kwork c=15): skip the keyword match.
 # Stoplist, max_age_hours and min_budget_rub still apply.

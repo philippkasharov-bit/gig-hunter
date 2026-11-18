@@ -26,7 +26,8 @@ def format_message(item: ScoredGig) -> str:
     desc = g.description[:DESC_PREVIEW_CHARS].strip()
     parts = [
         f"<b>{html.escape(g.title)}</b>",
-        f"{g.source.value} · {_budget(g.budget_max_rub)} · score {item.score}",
+        f"#{html.escape(item.category)} · {g.source.value} · "
+        f"{_budget(g.budget_max_rub)} · score {item.score}",
     ]
     if desc:
         parts.append(html.escape(desc))

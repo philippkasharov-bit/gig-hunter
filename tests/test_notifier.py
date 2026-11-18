@@ -14,7 +14,7 @@ SETTINGS = TelegramSettings(bot_token=SecretStr(TOKEN), chat_id="42")
 
 
 def _item(**kw) -> ScoredGig:
-    return ScoredGig(make_gig(**kw), score=7)
+    return ScoredGig(make_gig(**kw), score=7, category="логотип")
 
 
 def _notifier(handler) -> TelegramNotifier:
@@ -25,6 +25,7 @@ def test_format_escapes_html_and_shows_budget() -> None:
     text = format_message(_item(title="<script> & Co", budget=15000))
     assert "&lt;script&gt; &amp; Co" in text
     assert "15 000 ₽" in text and "score 7" in text
+    assert text.splitlines()[1].startswith("#логотип · fl_ru")
 
 
 def test_send_posts_chat_and_button() -> None:

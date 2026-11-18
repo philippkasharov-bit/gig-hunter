@@ -81,5 +81,5 @@ def test_registry_skips_enabled_source_without_adapter(tmp_path: Path) -> None:
         sources={Source.FL_RU: True, Source.AVITO: True, Source.KWORK: False},
         feeds={Source.FL_RU: "https://example.com/rss",
                Source.KWORK: "https://kwork.ru/projects?c=15"},
-        keywords=["x"], max_age_hours=1, db_path=tmp_path / "db")
+        categories={"x": ["x"]}, max_age_hours=1, db_path=tmp_path / "db")
     assert [a.source for a in build_adapters(cfg)] == [Source.FL_RU]

@@ -2,7 +2,10 @@ from datetime import timedelta
 
 from conftest import NOW, make_gig
 from gighunter.config import FilterConfig
-from gighunter.filtering import is_candidate, rank
+import pytest
+from pydantic import ValidationError
+
+from gighunter.filtering import categorize, is_candidate, rank
 from gighunter.models import Source
 
 
@@ -51,3 +54,30 @@ def test_rank_orders_by_score_then_newest(cfg: FilterConfig) -> None:
                        posted_at=NOW - timedelta(hours=10))
     ranked = rank([old_tie, weak, strong, make_gig("off", title="сервер")], cfg, NOW)
     assert [s.gig.external_id for s in ranked] == ["strong", "weak", "old"]
+
+
+def test_category_with_most_hits_wins(cfg: FilterConfig) -> None:
+    assert categorize(make_gig(title="Логотип", description="дизайн"), cfg) == "логотип"
+    assert categorize(make_gig(title="UI и логотип"), cfg) == "логотип"  # tie -> earlier
+
+
+def test_title_hit_outweighs_description(cfg: FilterConfig) -> None:
+    gig = make_gig(title="UI приложения", description="и логотип")
+    assert categorize(gig, cfg) == "веб"
+
+
+def test_generic_category_only_when_no_specific_hit(cfg: FilterConfig) -> None:
+    many_generic = make_gig(title="Дизайн дизайн", description="дизайн, и логотип")
+    assert categorize(many_generic, cfg) == "логотип"
+    assert categorize(make_gig(title="Дизайн коробки"), cfg) == "дизайн"
+    assert categorize(make_gig(title="Афиша"), cfg) == "дизайн"  # keyword-free source
+
+
+def test_rank_attaches_category(cfg: FilterConfig) -> None:
+    assert [s.category for s in rank([make_gig(title="Логотип")], cfg, NOW)] == ["логотип"]
+
+
+@pytest.mark.parametrize("tags", [{"two words": ["x"]}, {"веб-дизайн": ["x"]}, {"пусто": []}])
+def test_bad_category_tag_rejected(cfg: FilterConfig, tags: dict) -> None:
+    with pytest.raises(ValidationError):
+        FilterConfig.model_validate({**cfg.model_dump(), "categories": tags})
