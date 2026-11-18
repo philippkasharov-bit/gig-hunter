@@ -2,13 +2,15 @@
 sources:
   kwork: true
   fl_ru: true
-  freelance_ru: false   # no RSS (URL returns HTML); needs HTML adapter
-  avito: true
-  profi_ru: false   # login-gated; enable once adapter exists
+  freelance_ru: true
+  avito: false      # anti-bot; needs browser/proxy, no adapter yet
+  profi_ru: false   # login-gated; no adapter yet
 
-# RSS endpoints. fl_ru verified from user's PC (UTF-8, CDATA titles, /projects/<id>/ links).
+# Source URLs, one per adapter. Verified from user's PC 2026-11-18.
 feeds:
-  fl_ru: https://www.fl.ru/rss/all.xml
+  fl_ru: https://www.fl.ru/rss/all.xml            # RSS
+  freelance_ru: https://freelance.ru/task         # HTML task feed, all categories
+  kwork: https://kwork.ru/projects?c=15           # c=15 = "Дизайн", all subcategories
 
 keywords:
   - дизайн

@@ -7,7 +7,7 @@ from xml.etree import ElementTree
 
 import httpx
 
-from gighunter.adapters.rss import RssAdapter
+from gighunter.adapters.common import Adapter, AdapterError
 from gighunter.config import FilterConfig
 from gighunter.filtering import ScoredGig, rank
 from gighunter.health import SourceHealth
@@ -26,7 +26,7 @@ class RunStats:
     failed_sources: list[str] = field(default_factory=list)
 
 
-def _fetch_all(adapters: list[RssAdapter], client: httpx.Client,
+def _fetch_all(adapters: list[Adapter], client: httpx.Client,
                health: SourceHealth, now: datetime, stats: RunStats) -> list[Gig]:
     gigs: list[Gig] = []
     for adapter in adapters:
@@ -34,7 +34,7 @@ def _fetch_all(adapters: list[RssAdapter], client: httpx.Client,
             continue
         try:
             found = adapter.fetch(client)
-        except (httpx.HTTPError, ElementTree.ParseError) as exc:
+        except (httpx.HTTPError, ElementTree.ParseError, AdapterError) as exc:
             health.record_failure(adapter.source, now)
             stats.failed_sources.append(adapter.source.value)
             log.warning("%s failed: %s", adapter.source.value, type(exc).__name__)
@@ -58,7 +58,7 @@ def _send_ranked(ranked: list[ScoredGig], cfg: FilterConfig,
         sleep(cfg.send_pause_s)
 
 
-def run_once(cfg: FilterConfig, adapters: list[RssAdapter],
+def run_once(cfg: FilterConfig, adapters: list[Adapter],
              notifier: TelegramNotifier, store: SeenStore,
              client: httpx.Client, health: SourceHealth,
              now: datetime | None = None,
