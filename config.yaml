@@ -1,0 +1,48 @@
+# Design-only gigs. Substring match, case-insensitive.
+sources:
+  kwork: true
+  fl_ru: true
+  freelance_ru: false   # no RSS (URL returns HTML); needs HTML adapter
+  avito: true
+  profi_ru: false   # login-gated; enable once adapter exists
+
+# RSS endpoints. fl_ru verified from user's PC (UTF-8, CDATA titles, /projects/<id>/ links).
+feeds:
+  fl_ru: https://www.fl.ru/rss/all.xml
+
+keywords:
+  - дизайн
+  - дизайнер
+  - ui
+  - ux
+  - интерфейс
+  - макет
+  - figma
+  - фигма
+  - лендинг
+  - landing
+  - логотип
+  - фирменный стиль
+  - брендбук
+  - баннер
+  - презентаци
+  - инфографик
+  - иллюстраци
+  - превью
+  - обложк
+  - карточк
+  - моушн
+  - motion
+  - веб-дизайн
+  - сайт
+
+stoplist:
+  - за идею
+  - доля в проекте
+  - процент от прибыли
+
+# null = no floor; user accepts low-paid gigs for reviews.
+min_budget_rub: null
+# Gigs older than this are skipped.
+max_age_hours: 48
+db_path: data/gighunter.db
