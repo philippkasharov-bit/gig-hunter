@@ -45,6 +45,21 @@ stoplist:
   - за идею
   - доля в проекте
   - процент от прибыли
+  # Off-niche design (mostly Kwork). Phrases, not bare "3d"/"интерьер":
+  # descriptions mention "3D-мокап" or "товар в интерьере" in in-niche gigs.
+  - 3d-модел
+  - 3d модел
+  - 3d-печат
+  - 3d принтер
+  - roblox
+  - revit
+  - solidworks
+  - архитектурн
+  - дизайн интерьер
+  - дизайнер интерьер
+  - визуализация интерьер
+  - визуализации интерьер
+  - визуализаций интерьер
 
 # null = no floor; user accepts low-paid gigs for reviews.
 min_budget_rub: null
