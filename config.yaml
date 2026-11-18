@@ -46,3 +46,7 @@ min_budget_rub: null
 # Gigs older than this are skipped.
 max_age_hours: 48
 db_path: data/gighunter.db
+
+poll_interval_s: 300     # 5 min between runs
+max_alerts_per_run: 5    # rest stay unseen and go out next run
+send_pause_s: 1.0        # Telegram: ~1 msg/s per chat

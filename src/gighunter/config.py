@@ -14,6 +14,9 @@ class FilterConfig(BaseModel):
     min_budget_rub: int | None = None
     max_age_hours: int = Field(gt=0)
     db_path: Path
+    poll_interval_s: int = Field(default=300, gt=0)
+    max_alerts_per_run: int = Field(default=5, gt=0)
+    send_pause_s: float = Field(default=1.0, ge=0)
 
     @property
     def enabled_sources(self) -> list[Source]:
