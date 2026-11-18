@@ -36,6 +36,11 @@ keywords:
   - motion
   - веб-дизайн
 
+# Feeds already limited to design (Kwork c=15): skip the keyword match.
+# Stoplist, max_age_hours and min_budget_rub still apply.
+keyword_free_sources:
+  - kwork
+
 stoplist:
   - за идею
   - доля в проекте

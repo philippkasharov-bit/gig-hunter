@@ -58,6 +58,8 @@ def is_candidate(gig: Gig, cfg: FilterConfig, now: datetime) -> bool:
         return False
     if cfg.stoplist and _hits(text, cfg.stoplist):
         return False
+    if gig.source in cfg.keyword_free_sources:
+        return True  # feed is pre-filtered to design (e.g. Kwork c=15)
     return _hits(text, cfg.keywords) > 0
 
 

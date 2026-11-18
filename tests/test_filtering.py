@@ -3,6 +3,7 @@ from datetime import timedelta
 from conftest import NOW, make_gig
 from gighunter.config import FilterConfig
 from gighunter.filtering import is_candidate, rank
+from gighunter.models import Source
 
 
 def test_keyword_match_is_case_insensitive(cfg: FilterConfig) -> None:
@@ -16,6 +17,15 @@ def test_no_keyword_rejected(cfg: FilterConfig) -> None:
 def test_short_ascii_keyword_needs_word_boundary(cfg: FilterConfig) -> None:
     assert is_candidate(make_gig(title="UI для приложения"), cfg, NOW)
     assert not is_candidate(make_gig(title="Build a quiz bot"), cfg, NOW)
+
+
+def test_keyword_free_source_skips_keywords_only(cfg: FilterConfig) -> None:
+    cfg.keyword_free_sources = [Source.KWORK]
+    assert is_candidate(make_gig(title="Этикетка для комбучи", source=Source.KWORK), cfg, NOW)
+    assert not is_candidate(make_gig(title="Этикетка для комбучи"), cfg, NOW)
+    assert not is_candidate(make_gig(title="Этикетка за идею", source=Source.KWORK), cfg, NOW)
+    old = NOW - timedelta(hours=49)
+    assert not is_candidate(make_gig(source=Source.KWORK, posted_at=old), cfg, NOW)
 
 
 def test_stoplist_rejects(cfg: FilterConfig) -> None:

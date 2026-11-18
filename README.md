@@ -108,6 +108,7 @@ Get-Content data\gighunter.log -Tail 20 -Wait
 | `feeds` | URL per source |
 | `keywords` | case-insensitive substrings; a gig must contain at least one. Short Latin words (`ui`) match whole words only |
 | `stoplist` | any hit rejects the gig |
+| `keyword_free_sources` | sources already limited to design (default: `kwork`); keyword match skipped, other filters still apply |
 | `min_budget_rub` | budget floor; `null` = none. Gigs without a stated budget always pass |
 | `max_age_hours` | skip older gigs |
 | `poll_interval_s` | seconds between checks (keep ≥ 60 to avoid being rate-limited) |

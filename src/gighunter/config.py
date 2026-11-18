@@ -11,6 +11,8 @@ class FilterConfig(BaseModel):
     feeds: dict[Source, str] = {}
     keywords: list[str] = Field(min_length=1)
     stoplist: list[str] = []
+    # Sources whose feed is already design-only: keyword match is skipped.
+    keyword_free_sources: list[Source] = []
     min_budget_rub: int | None = None
     max_age_hours: int = Field(gt=0)
     db_path: Path
